@@ -1,0 +1,39 @@
+filters:
+  and:
+    - file.name == "TASK"
+    - file.path.startsWith("tasks")
+formulas:
+  HUID: file.folder.split("/")[1]
+views:
+  - type: table
+    name: Table
+    order:
+      - formula.HUID
+      - file.name
+      - title
+      - author
+      - priority
+      - status
+      - tags
+      - file.mtime
+    sort:
+      - property: formula.HUID
+        direction: DESC
+  - type: kanban
+    name: Status Kanban
+    groupBy:
+      property: status
+      direction: ASC
+    groupOrder:
+      -
+      - OPEN
+      - CLOSED
+    order:
+      - title
+      - formula.HUID
+      - author
+      - tags
+      - priority
+    sort:
+      - property: priority
+        direction: DESC

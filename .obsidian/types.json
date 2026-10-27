@@ -1,0 +1,10 @@
+{
+  "types": {
+    "tags": "tags",
+    "status": "text",
+    "creation date": "date",
+    "due date": "datetime",
+    "modified date": "datetime",
+    "priority": "number"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "newFileLocation": "current",
+  "attachmentFolderPath": ".",
+  "showLineNumber": false,
+  "readableLineLength": true,
+  "alwaysUpdateLinks": true,
+  "pdfExportSettings": {
+    "includeName": true,
+    "pageSize": "A4",
+    "landscape": false,
+    "margin": "0",
+    "downscalePercent": 80
+  },
+  "defaultViewMode": "preview",
+  "showInlineTitle": true
+}
