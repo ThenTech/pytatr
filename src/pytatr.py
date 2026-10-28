@@ -14,6 +14,7 @@ Source, documentation and license: https://github.com/ThenTech/pytatr
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
@@ -92,7 +93,12 @@ def new_huid(suffix: str | None) -> str:
 
 
 def git_user_name() -> str:
-    result = subprocess.run(["git", "config", "user.name"], check=False, capture_output=True, text=True)
+    # On Windows, a shell such as MSYS2 (for example the shell of `just`) can set HOME to a folder
+    # without the global .gitconfig. Path.home() uses USERPROFILE on Windows and HOME on other systems.
+    env = {**os.environ, "HOME": str(Path.home())}
+    result = subprocess.run(
+        ["git", "config", "user.name"], check=False, capture_output=True, text=True, env=env
+    )
     return result.stdout.strip()
 
 

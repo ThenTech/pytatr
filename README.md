@@ -1,4 +1,4 @@
-# pytatr
+# pytatr 🥔
 
 A folder-based task tracker for repositories using `git` version control. It is a reimplementation inspired by [tsoding/tatr](https://github.com/tsoding/tatr).
 

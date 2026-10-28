@@ -59,6 +59,7 @@ def load_script() -> ModuleType:
 
 tasks = load_script()
 REAL_NEW_HUID = tasks.new_huid
+REAL_GIT_USER_NAME = tasks.git_user_name
 
 
 def fake_huid(index: int, suffix: str | None = None) -> str:
@@ -204,6 +205,14 @@ class TestTatrHuid(TaskTestCase):
         huid = REAL_NEW_HUID("thentech")
         self.assertTrue(huid.endswith("-thentech"))
         self.assertRegex(huid, tasks.HUID_RE)
+
+    def test_git_user_name_uses_os_home_folder(self) -> None:
+        # A shell such as MSYS2 can set HOME to a folder without the global .gitconfig (Windows).
+        run_mock = self.patch(tasks.subprocess, "run")
+        run_mock.return_value.stdout = "Home User\n"
+        with mock.patch.dict(os.environ, {"HOME": str(self.root)}):
+            self.assertEqual(REAL_GIT_USER_NAME(), "Home User")
+            self.assertEqual(run_mock.call_args.kwargs["env"]["HOME"], str(Path.home()))
 
     def test_huid_pattern(self) -> None:
         for huid in ("20261026-101500", "20261026-101500-thentech", "20261026-101500-a-b-1"):
