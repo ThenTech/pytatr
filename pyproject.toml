@@ -1,0 +1,94 @@
+[project]
+name = "pytatr"
+version = "0.0.2"
+readme = "README.md"
+requires-python = ">=3.13.17"
+description = "A folder-based task tracker"
+keywords = ["task tracker"]
+authors = [
+    { name = "ThenTech", email = "william@then.tech" },
+]
+maintainers = [
+    { name = "ThenTech", email = "william@then.tech" },
+]
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "ruff==0.17.2",
+    "rust-just==1.59.0",
+]
+prod = []
+test = []
+
+[project.urls]
+"Homepage" = "https://github.com/ThenTech/pytatr"
+"Bug Tracker" = "https://github.com/ThenTech/pytatr/issues"
+"Documentation" = "https://github.com/ThenTech/pytatr/tasks/README.md"
+"Source Code" = "https://github.com/ThenTech/pytatr"
+
+[tool.uv]
+# Not an installable package, just a project to manage the scripts' dependencies.
+package = false
+# Exclude very recently released packages to mitigate supply-chain attacks (as in the main repo).
+exclude-newer = "4 days"
+# and don't build anything locally
+no-build = true
+
+[tool.ruff]
+target-version = "py313"
+line-length = 110
+
+[tool.ruff.format]
+quote-style = "double"
+line-ending = "lf"
+
+[tool.ruff.lint]
+extend-select = [
+    "E",
+    "F",
+    "I",
+    "UP",
+    "N",
+    "S",
+    "C",
+    "FBT",
+    "B",
+    "A",
+    "Q",
+    "YTT",
+    "BLE",
+    "DTZ",
+    "DJ",
+    "PL",
+    "PTH",
+    "PERF",
+    "RUF",
+    "INT",
+]
+extend-ignore = ["BLE001", "E501", "F403", "F405", "FBT003", "DJ001", "RUF012"]
+# preview = true
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
+
+[tool.ruff.lint.pylint]
+max-args = 7
+
+[tool.ruff.lint.per-file-ignores]
+# The tests run the script and `git init` in a temporary folder, with no external input.
+"src/test_*.py" = ["S603"]
+
+# [tool.ty.rules]
+# # https://docs.astral.sh/ty/reference/rules
+# ambiguous-protocol-member = "error"
+# deprecated = "error"
+# ignore-comment-unknown-rule = "error"
+# invalid-ignore-comment = "error"
+# possibly-missing-attribute = "error"
+# possibly-missing-implicit-call = "error"
+# redundant-cast = "error"
+# unresolved-global = "error"
+# unsupported-base = "error"
+# unused-ignore-comment = "error"
+# useless-overload-body = "error"

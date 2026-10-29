@@ -42,7 +42,7 @@ title: <title>
 author: <current git user name>
 creation date: <current date, YYYY-MM-DD>
 status: OPEN
-priority: 100
+priority: 50
 tags:
   - <tag>
 ---
@@ -56,7 +56,7 @@ tags:
 | `author`        | yes      | The `git config user.name` of the person who created the task.                                       |
 | `creation date` | yes      | Local date when the task was created, `YYYY-MM-DD`.                                                  |
 | `status`        | yes      | `OPEN` or `CLOSED`, nothing else. Use tags for more detailed states (for example `bug`, `scope`, `wontfix`). |
-| `priority`      | yes      | Integer. The highest value sorts first. Default `100`. It is a sort key, not an absolute importance. |
+| `priority`      | yes      | Integer. The highest value sorts first. Default `50`. It is a sort key, not an absolute importance. |
 | `tags`          | no       | YAML list of tag names. Use `tags: []` for no tags. Tag names contain no spaces and no square brackets. |
 
 You may add other properties (for example `assignee` or `due date`). The tooling ignores them and does not change them.
@@ -138,8 +138,7 @@ Filters for `just tasks` and `just task ls`. A task must match all filters (AND)
 | `--huid PREFIX`                                         | The HUID starts with the prefix                 |
 | `-a`, `--by-id`                                         | Ascending order / sort by HUID                  |
 
-A mass update changes each task that matches the filters. `-u` / `--update` takes a comma-separated list of
-`open`, `close`, `+tag` and `-tag`. A mass update needs a filter. To update all tasks on purpose, use `--any`.
+A mass update changes each task that matches the filters. `-u` / `--update` takes a comma-separated list of `open`, `close`, `+tag` and `-tag`. A mass update needs a filter. To update all tasks on purpose, use `--any`.
 
 ```bash
 just tasks -t bug --lt 50                  # open bugs with priority below 50
