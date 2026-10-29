@@ -16,6 +16,7 @@ import argparse
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -26,13 +27,25 @@ from pathlib import Path
 
 TASKS_DIR_NAME = "tasks"
 TASK_FILE_NAME = "TASK.md"
-DEFAULT_PRIORITY = 100
+DEFAULT_PRIORITY = 50
 DEFAULT_TITLE = "New Task"
+
 STATUSES = ("OPEN", "CLOSED")
-MARKER_TAGS: dict[str, tuple[str, ...]] = {"TODO": (), "FIXME": ("bug",)}
+
+MARKER_TAGS: dict[str, tuple[str, ...]] = {
+    "TODO": (),
+    "FIXME": ("bug",),
+}
 BLOCK_COMMENTS = {"/*": "*/", "<!--": "-->"}
 COMMENT_CLOSERS = tuple(BLOCK_COMMENTS.values())
-TODO_ANSWERS = {"y": "convert", "n": "keep", "a": "convert-file", "s": "skip-file", "q": "quit"}
+
+TODO_ANSWERS = {
+    "y": "convert",
+    "n": "keep",
+    "a": "convert-file",
+    "s": "skip-file",
+    "q": "quit",
+}
 TODO_QUESTION = "Convert to a task? y = yes, n = no, a = all in this file, s = skip this file, q = quit: "
 
 HUID_RE = re.compile(r"^[0-9]{8}-[0-9]{6}(-[a-zA-Z0-9\-]*)?$")
@@ -92,12 +105,18 @@ def new_huid(suffix: str | None) -> str:
     return f"{huid}-{suffix}" if suffix else huid
 
 
+def get_git() -> str:
+    if path := shutil.which("git"):
+        return path
+    raise SystemExit("ERROR: git executable not in PATH!")
+
+
 def git_user_name() -> str:
     # On Windows, a shell such as MSYS2 (for example the shell of `just`) can set HOME to a folder
     # without the global .gitconfig. Path.home() uses USERPROFILE on Windows and HOME on other systems.
     env = {**os.environ, "HOME": str(Path.home())}
-    result = subprocess.run(
-        ["git", "config", "user.name"], check=False, capture_output=True, text=True, env=env
+    result = subprocess.run(  # noqa: S603 - constant arguments, no shell
+        [get_git(), "config", "user.name"], check=False, capture_output=True, text=True, env=env
     )
     return result.stdout.strip()
 
@@ -395,8 +414,9 @@ def cmd_ref(args: argparse.Namespace) -> int:
     for task in tasks:
         print(f"# {task.report()}")
         exclude = f":(exclude){TASKS_DIR_NAME}/{task.huid}"
-        result = subprocess.run(
-            ["git", "grep", "--untracked", "-n", "-I", "-F", "-e", task.huid, "--", ".", exclude],
+        # The HUID is a folder name that matched HUID_RE, and it follows `-e`, so git cannot read it as an option.
+        result = subprocess.run(  # noqa: S603 - validated HUID, list arguments, no shell
+            [get_git(), "grep", "--untracked", "-n", "-I", "-F", "-e", task.huid, "--", ".", exclude],
             cwd=repo_root,
             check=False,
             capture_output=True,

@@ -59,6 +59,7 @@ def load_script() -> ModuleType:
 
 tasks = load_script()
 REAL_NEW_HUID = tasks.new_huid
+REAL_GET_GIT = tasks.get_git
 REAL_GIT_USER_NAME = tasks.git_user_name
 
 
@@ -82,7 +83,9 @@ class TaskTestCase(unittest.TestCase):
         self.addCleanup(os.chdir, previous_cwd)
 
         clock = itertools.count()
-        self.huid_mock = self.patch(tasks, "new_huid", side_effect=lambda suffix: fake_huid(next(clock), suffix))
+        self.huid_mock = self.patch(
+            tasks, "new_huid", side_effect=lambda suffix: fake_huid(next(clock), suffix)
+        )
         self.sleep_mock = self.patch(tasks.time, "sleep")
         self.patch(tasks, "git_user_name", return_value="Test User")
 
@@ -218,7 +221,13 @@ class TestTatrHuid(TaskTestCase):
         for huid in ("20261026-101500", "20261026-101500-thentech", "20261026-101500-a-b-1"):
             with self.subTest(huid=huid):
                 self.assertRegex(huid, tasks.HUID_RE)
-        for name in ("2026102-101500", "20261026101500", "20261026-101500_x", "20261026-101500-a b", "README.md"):
+        for name in (
+            "2026102-101500",
+            "20261026101500",
+            "20261026-101500_x",
+            "20261026-101500-a b",
+            "README.md",
+        ):
             with self.subTest(name=name):
                 self.assertNotRegex(name, tasks.HUID_RE)
 
@@ -321,7 +330,9 @@ class TestLocalFrontmatter(TaskTestCase):
         (self.tasks_dir / fake_huid(9)).mkdir()
         self.add_task(fake_huid(2))
         self.add_task(fake_huid(1))
-        self.assertEqual([task.huid for task in tasks.load_tasks(self.tasks_dir)], [fake_huid(1), fake_huid(2)])
+        self.assertEqual(
+            [task.huid for task in tasks.load_tasks(self.tasks_dir)], [fake_huid(1), fake_huid(2)]
+        )
 
     def test_update_changes_only_status_and_tags(self) -> None:
         path = self.add_task(
@@ -353,7 +364,9 @@ class TestTatrTitleFallback(TaskTestCase):
     """A task without a `title` property uses the tatr `# heading`, then the HUID."""
 
     def test_title_from_heading(self) -> None:
-        path = self.write(f"tasks/{fake_huid(0)}/TASK.md", "---\nstatus: OPEN\n---\n# Heading title\n\nText\n")
+        path = self.write(
+            f"tasks/{fake_huid(0)}/TASK.md", "---\nstatus: OPEN\n---\n# Heading title\n\nText\n"
+        )
         self.assertEqual(tasks.load_task(path).title, "Heading title")
 
     def test_title_from_huid(self) -> None:
@@ -500,7 +513,9 @@ class TestTatrCommands(TaskTestCase):
     def test_new_defaults(self) -> None:
         self.run_cli("new")
         [task] = tasks.load_tasks(self.tasks_dir)
-        self.assertEqual((task.title, task.priority, task.tags), (tasks.DEFAULT_TITLE, tasks.DEFAULT_PRIORITY, ()))
+        self.assertEqual(
+            (task.title, task.priority, task.tags), (tasks.DEFAULT_TITLE, tasks.DEFAULT_PRIORITY, ())
+        )
 
     def test_find(self) -> None:
         self.add_task("20261027-100000", "Open")
@@ -536,7 +551,7 @@ class TestTatrCommands(TaskTestCase):
 
     @unittest.skipUnless(HAS_GIT, "git is not available")
     def test_ref(self) -> None:
-        subprocess.run(["git", "init", "-q"], cwd=self.root, check=True)
+        subprocess.run([REAL_GET_GIT(), "init", "-q"], cwd=self.root, check=True)
         huid, other = fake_huid(0), fake_huid(1)
         self.add_task(huid)
         self.add_task(other)
@@ -582,7 +597,9 @@ class TestLocalTaskDiscovery(TaskTestCase):
         huid = "20261027-120000-thentech"
         self.write(f"tasks/{huid}/TASK.md", self.manual_task_text("With suffix"))
         self.assertEqual(self.listed(), [huid])
-        self.assertEqual(self.run_cli("find", "20261027-120000-then", "--path-only")[1], f"tasks/{huid}/TASK.md\n")
+        self.assertEqual(
+            self.run_cli("find", "20261027-120000-then", "--path-only")[1], f"tasks/{huid}/TASK.md\n"
+        )
 
     def test_folders_that_are_not_huids_are_ignored(self) -> None:
         names = (
@@ -763,8 +780,8 @@ class TestTatrScript(unittest.TestCase):
 
     @unittest.skipUnless(HAS_GIT, "git is not available")
     def test_new_uses_git_user_and_real_huid(self) -> None:
-        subprocess.run(["git", "init", "-q"], cwd=self.root, check=True)
-        subprocess.run(["git", "config", "user.name", "Script User"], cwd=self.root, check=True)
+        subprocess.run([REAL_GET_GIT(), "init", "-q"], cwd=self.root, check=True)
+        subprocess.run([REAL_GET_GIT(), "config", "user.name", "Script User"], cwd=self.root, check=True)
         result = self.run_script("new", "Real", "task", "-t", "x")
         self.assertEqual(result.returncode, 0, result.stderr)
         [folder] = (self.root / "tasks").iterdir()
